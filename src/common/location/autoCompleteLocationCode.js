@@ -11,12 +11,10 @@ export default function AutoCompleteLocationCode({
 }) {
 
     const [locations, setLocations] = useState([]);
-    const [selectedCode, setSelectedCode] = useState(code);
 
     //useEffect
     useEffect(() => {
         getAutoCompleteLoactions("");
-        setSelectedCode(code);
     }, [code]);
 
     //to call autocomplete API
@@ -29,10 +27,8 @@ export default function AutoCompleteLocationCode({
     const onChangeLocationCode = (e, value) => {
         if (value) {
             setCode(value.code);
-            setSelectedCode(value.code);
         } else {
             setCode("");
-            setSelectedCode("");
             setName("");
         }
     };
@@ -40,10 +36,8 @@ export default function AutoCompleteLocationCode({
     const onInputLocationCode = (e, value) => {
         if (value.length > 0) {
             setCode(value)
-            setSelectedCode(value)
             getLocationDetails(value)
         } else {
-            setSelectedCode("");
             setCode("");
         }
     }
@@ -58,7 +52,7 @@ export default function AutoCompleteLocationCode({
             renderInput={(params) => <TextField {...params} />}
             size="small"
             onChange={(e, val) => onChangeLocationCode(e, val)}
-            value={selectedCode}
+            value={code}
             onBlur={() => getLocationDetails(code)}
             onInputChange={(e, val) => onInputLocationCode(e, val)}
         />
