@@ -8,7 +8,7 @@ export const LocationAPI = {
             method: 'POST',
             data: { code, name }
         });
-        console.log("response.data:", response.data)
+
         return response.data;
     },
 

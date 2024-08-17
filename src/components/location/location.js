@@ -73,7 +73,7 @@ export default function Location() {
                     }
                 })
             } catch (error) {
-                console.log(error)
+                console.error(error)
             }
         }
     }
