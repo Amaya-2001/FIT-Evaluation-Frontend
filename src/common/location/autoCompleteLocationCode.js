@@ -11,22 +11,25 @@ export default function AutoCompleteLocationCode({
 }) {
 
     const [locations, setLocations] = useState([]);
+    const [filteredLocations, setFileteredLocations] = useState([]);
 
     //useEffect
     useEffect(() => {
         getAutoCompleteLoactions("");
-    }, [code]);
+    }, []);
 
     //to call autocomplete API
     const getAutoCompleteLoactions = (key) => {
         LocationAPI.getAutoCompleteLocations(key).then((data) => {
             setLocations(data);
+            setFileteredLocations(data);
         });
     }
 
     const onChangeLocationCode = (e, value) => {
         if (value) {
             setCode(value.code);
+            setName(value.name);
         } else {
             setCode("");
             setName("");
@@ -34,19 +37,21 @@ export default function AutoCompleteLocationCode({
     };
 
     const onInputLocationCode = (e, value) => {
-        if (value.length > 0) {
-            setCode(value)
-            getLocationDetails(value)
-        } else {
-            setCode("");
+        const filtered = locations.filter(val =>
+            val.code.toLowerCase().includes(value?.toLowerCase()) ||
+            val.label.toLowerCase().includes(value?.toLowerCase()));
+
+        if (value && filtered.length === 0) {
+            setCode(value);
         }
+        setFileteredLocations(filtered);
     }
-    
+
     return (
         <Autocomplete
             disablePortal
             id="combo-box-demo"
-            options={locations}
+            options={filteredLocations}
             sx={{ width: 350 }}
             label="Search by loaction code"
             renderInput={(params) => <TextField {...params} />}
