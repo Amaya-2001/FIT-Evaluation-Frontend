@@ -29,5 +29,15 @@ export const LocationAPI = {
         });
 
         return response.data;
+    },
+
+    getLocation: async function (code) {
+        const response = await api.request({
+            url: `${endPoint}/code`,
+            method: 'GET',
+            params: { code }
+        });
+
+        return response.data;
     }
 } 

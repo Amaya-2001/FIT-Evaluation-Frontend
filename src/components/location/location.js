@@ -9,6 +9,7 @@ import {
     Typography,
     TableBody,
     TableRow,
+    TablePagination,
 } from '@mui/material';
 import Paper from '@mui/material/Paper';
 import { useState, useEffect } from 'react';
@@ -18,35 +19,69 @@ import AutoCompleteLocationCode from '../../common/location/autoCompleteLocation
 
 export default function Location() {
     const [code, setCode] = useState("");
-    const [name, setName] = useState(""); //defines string
-    const [allLocations, setAllLocations] = useState([]); //define array
+    const [name, setName] = useState("");
+    const [allLocations, setAllLocations] = useState([]);
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
 
-    // //To call the getAllLocations function Used the useEffect here
+    const handleChangePage = (event, newPage) => {
+        setPage(newPage);
+    };
+
+    const handleChangeRowsPerPage = (event) => {
+        setRowsPerPage(+event.target.value);
+        setPage(0);
+    };
+
     useEffect(() => {
         getAllLocations()
     }, []);
 
-    //arrow function
+    //To save location details
     const onSave = () => {
-        // console.log("code:", code);
-        // console.log("name:", name);
+        if (!code) { toast.warn("Enter the code"); return false; }
+        if (!name || name.trim().length === 0) { toast.warn("Enter the name"); return false; }
+
         LocationAPI.saveLocation(code, name).then(() => {
-            toast.success("Save Successfully!");
+            onClearForm();
+            getAllLocations();
+            toast.success("Saved Successfully!");
         });
     }
 
     //To load the grid data use this function
     const getAllLocations = () => {
         LocationAPI.getAllLocations().then((data) => {
-            console.log("location data:", data);
             setAllLocations(data);
         }).catch((error) => toast.error(error.message));
     }
 
+    //To clear the form data
+    const onClearForm = () => {
+        setCode("");
+        setName("");
+    }
+
+    //get a one location details
+    const getLocationDetails = (code) => {
+        if (code) {
+            try {
+                LocationAPI.getLocation(code).then((data) => {
+                    if (data) {
+                        setCode(data.code);
+                        setName(data.name);
+                    }
+                })
+            } catch (error) {
+                console.log(error)
+            }
+        }
+    }
+
     return (
         <Grid container>
-            <Grid item={'true'} xs={3} sm={3} md={3} lg={3} xl={3}></Grid>
-            <Grid item={'true'} xs={6} sm={6} md={6} lg={6} xl={6}>
+            <Grid item xs={3} sm={3} md={3} lg={3} xl={3}></Grid>
+            <Grid item xs={6} sm={6} md={6} lg={6} xl={6}>
                 <Grid container spacing={2}>
                     <Grid item xs={6} md={8}> <Typography variant="h6" gutterBottom>
                         Location
@@ -58,16 +93,12 @@ export default function Location() {
                         </Typography>
                     </Grid>
                     <Grid item xs={6} md={8} sm={8} lg={4} xl={4}>
-                        {/* <TextField
-                            id="outlined-size-small"
-                            size="small"
-                            value={code}
-                            onChange={(e) => setCode(e.target.value)}
-                        /> */}
                         <AutoCompleteLocationCode
-                            selectedCode={code}
-                            selectedSetCode={setCode}
-                            getAllLocations={getAllLocations} />
+                            code={code}
+                            setCode={setCode}
+                            getLocationDetails={getLocationDetails}
+                            setName={setName}
+                             />
                     </Grid>
                 </Grid>
                 <Grid container spacing={2}>
@@ -95,29 +126,42 @@ export default function Location() {
                         <Button variant="contained" onClick={onSave}>Save</Button>
                     </Grid>
                     <Grid item xs={6} md={8} sm={8} xl={4} lg={4}>
-                        <Button variant="contained" color='error'>Clear</Button>
+                        <Button variant="contained" color='error' onClick={onClearForm}>Clear</Button>
                     </Grid>
                 </Grid>
                 <Grid container sx={{ mt: 2 }}>
-                    <TableContainer component={Paper}>
-                        <Table aria-label="simple table">
-                            <TableHead style={{ backgroundColor: "blue" }}>
-                                <TableRow>
-                                    <TableCell>Code</TableCell>
-                                    <TableCell>Name</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {allLocations && allLocations.map((item) => (
-                                    <TableRow
-                                        key={item.code}>
-                                        <TableCell>{item.code}</TableCell>
-                                        <TableCell>{item.name}</TableCell>
+                    <Paper sx={{ width: '100%', overflow: 'hidden' }}>
+                        <TableContainer sx={{ maxHeight: 440, minWidth: 650, overflowX: 'auto', }}>
+                            <Table stickyHeader aria-label="sticky table">
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell>Code</TableCell>
+                                        <TableCell>Name</TableCell>
                                     </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
+                                </TableHead>
+                                <TableBody>
+                                    {allLocations && allLocations
+                                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                                        .map((item) => (
+                                            <TableRow
+                                                key={item.code}>
+                                                <TableCell>{item.code}</TableCell>
+                                                <TableCell>{item.name}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    </Paper>
+                    <TablePagination
+                        rowsPerPageOptions={[5, 25, 100]}
+                        component="div"
+                        count={allLocations.length}
+                        rowsPerPage={rowsPerPage}
+                        page={page}
+                        onPageChange={handleChangePage}
+                        onRowsPerPageChange={handleChangeRowsPerPage}
+                    />
                 </Grid>
                 <Grid item={'true'} xs={3} sm={3} md={3} lg={3} xl={3}></Grid>
             </Grid>

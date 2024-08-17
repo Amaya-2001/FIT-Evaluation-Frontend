@@ -4,49 +4,63 @@ import { LocationAPI } from '../../api/LocationAPI';
 import { useState, useEffect } from 'react';
 
 export default function AutoCompleteLocationCode({
-    selectedCode,
-    selectedSetCode,
-    getAllLocations
+    code,
+    setCode,
+    getLocationDetails,
+    setName
 }) {
+
     const [locations, setLocations] = useState([]);
+    const [selectedCode, setSelectedCode] = useState(code);
 
     //useEffect
     useEffect(() => {
         getAutoCompleteLoactions("");
-    }, []);
+        setSelectedCode(code);
+    }, [code]);
 
     //to call autocomplete API
     const getAutoCompleteLoactions = (key) => {
         LocationAPI.getAutoCompleteLocations(key).then((data) => {
-            console.log("data:", data)
             setLocations(data);
         });
     }
 
     const onChangeLocationCode = (e, value) => {
-        console.log("value:", value);
-        console.log("e.target.value:", e.target.value)
-        selectedSetCode(e.target.value)
-
-    }
+        if (value) {
+            setCode(value.code);
+            setSelectedCode(value.code);
+        } else {
+            setCode("");
+            setSelectedCode("");
+            setName("");
+        }
+    };
 
     const onInputLocationCode = (e, value) => {
-        console.log("on input value:", value)
-        selectedSetCode(value);
+        if (value.length > 0) {
+            setCode(value)
+            setSelectedCode(value)
+            getLocationDetails(value)
+        } else {
+            setSelectedCode("");
+            setCode("");
+        }
     }
-
+    
     return (
         <Autocomplete
             disablePortal
             id="combo-box-demo"
             options={locations}
             sx={{ width: 350 }}
-            renderInput={(params) => <TextField {...params} label="Location Code" />}
+            label="Search by loaction code"
+            renderInput={(params) => <TextField {...params} />}
             size="small"
-            onChange={(e, value) => onChangeLocationCode(e, value)}
+            onChange={(e, val) => onChangeLocationCode(e, val)}
             value={selectedCode}
-            onBlur={() => getAllLocations(selectedCode)}
-            onInputChange={(e, value) => onInputLocationCode(e, value)}
+            onBlur={() => getLocationDetails(code)}
+            onInputChange={(e, val) => onInputLocationCode(e, val)}
         />
     )
 }
